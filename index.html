@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Riftbound Art Reveal</title>
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #121724;
+      --panel-2: #1a2133;
+      --text: #eef2ff;
+      --muted: #9aa6c4;
+      --line: #2c3652;
+      --accent: #7aa2ff;
+      --accent-2: #94f0c1;
+      --success: #7ef0b8;
+      --danger: #ff8585;
+      --shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(122, 162, 255, 0.12), transparent 35%),
+        linear-gradient(180deg, #0b0d12 0%, #090b10 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .title {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 760px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .viewer-shell {
+      position: relative;
+      padding: 18px;
+    }
+
+    .viewer-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .viewer-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .viewer-title h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .viewer-title p,
+    .tiny {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .viewer {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+        #0d1220;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+    }
+
+    .viewer img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform-origin: center center;
+      will-change: transform, filter;
+      user-select: none;
+      -webkit-user-drag: none;
+      transition: transform 240ms ease, filter 240ms ease;
+    }
+
+    .viewer::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, transparent 45%, rgba(0,0,0,0.2) 100%),
+        linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.18));
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .placeholder {
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      max-width: 520px;
+      z-index: 1;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .meta-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .meta-box .k {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .meta-box .v {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .guess-area {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .guess-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      color: #0b1020;
+      background: linear-gradient(180deg, var(--accent), #5f86df);
+      transition: transform 0.12s ease;
+    }
+
+    button.secondary {
+      background: #202944;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    button.success {
+      background: linear-gradient(180deg, var(--success), #5fd79b);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .guess-log {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .guess-pill {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .score-banner {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(126, 240, 184, 0.35);
+      background: rgba(126, 240, 184, 0.08);
+      display: none;
+    }
+
+    .score-banner.show {
+      display: block;
+    }
+
+    .footer {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .footer a {
+      color: var(--accent-2);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 999;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      width: 10px;
+      height: 18px;
+      border-radius: 2px;
+      opacity: 0.95;
+      animation: confetti-fall linear forwards;
+    }
+
+    @keyframes confetti-fall {
+      from {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+      }
+      to {
+        transform: translate3d(var(--drift, 0px), 110vh, 0) rotate(var(--spin, 540deg));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .guess-row {
+        grid-template-columns: 1fr;
+      }
+
+      .meta {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .meta {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="confetti" id="confetti"></div>
+
+  <div class="wrap">
+    <section class="hero">
+      <h1 class="title">Riftbound Art Reveal</h1>
+      <p class="subtitle">Guess the card from the artwork as it slowly reveals across six steps.</p>
+    </section>
+
+    <div class="grid">
+      <main class="card viewer-shell">
+        <div class="viewer-head">
+          <div class="viewer-title">
+            <h2 id="displayEpisode">Loading...</h2>
+            <p>Reveal step <span id="stepText">1</span> of 6</p>
+          </div>
+          <div class="tiny">Built for podcast guessing and score tracking.</div>
+        </div>
+
+        <div class="viewer" id="viewer">
+          <img id="cardImage" alt="Card artwork" hidden />
+          <div class="placeholder" id="placeholder">
+            Loading round data...
+          </div>
+        </div>
+
+        <div class="meta">
+          <div class="meta-box">
+            <div class="k">Reveal step</div>
+            <div class="v" id="currentStep">1 / 6</div>
+          </div>
+          <div class="meta-box">
+            <div class="k">Current zoom</div>
+            <div class="v" id="currentZoom">4.60x</div>
+          </div>
+          <div class="meta-box">
+            <div class="k">Guesses used</div>
+            <div class="v" id="guessCount">0</div>
+          </div>
+          <div class="meta-box">
+            <div class="k">Best possible score</div>
+            <div class="v" id="scoreHint">6 / 6</div>
+          </div>
+        </div>
+
+        <section class="guess-area">
+          <div class="guess-row">
+            <input id="guessInput" type="text" list="cardPoolList" placeholder="Type a guess here" autocomplete="off" />
+            <button id="submitGuessBtn" type="button">Submit guess</button>
+          </div>
+
+          <datalist id="cardPoolList"></datalist>
+
+          <div class="buttons">
+            <button id="nextRevealBtn" class="secondary" type="button">Next Reveal</button>
+          </div>
+
+          <div class="status" id="statusText">Round ready. Enter a guess or move to the next reveal.</div>
+          <div class="guess-log" id="guessLog"></div>
+
+          <div class="score-banner" id="scoreBanner">
+            <strong id="scoreHeadline">Solved!</strong>
+            <div class="tiny" id="scoreDetail">They got it in 1 try.</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <p class="footer">Built by <a href="https://github.com/pentestag" target="_blank" rel="noreferrer">pentestag</a>.</p>
+  </div>
+
+  <script>
+    const state = {
+      step: 1,
+      maxSteps: 6,
+      guesses: [],
+      solved: false,
+      round: null
+    };
+
+    const revealScales = [4.6, 3.9, 3.1, 2.4, 1.7, 1.0];
+    const revealBlurs = [12, 9, 6, 4, 2, 0];
+
+    const els = {
+      displayEpisode: document.getElementById('displayEpisode'),
+      stepText: document.getElementById('stepText'),
+      currentStep: document.getElementById('currentStep'),
+      currentZoom: document.getElementById('currentZoom'),
+      guessCount: document.getElementById('guessCount'),
+      scoreHint: document.getElementById('scoreHint'),
+      guessInput: document.getElementById('guessInput'),
+      submitGuessBtn: document.getElementById('submitGuessBtn'),
+      nextRevealBtn: document.getElementById('nextRevealBtn'),
+      rightAnswerBtn: document.getElementById('rightAnswerBtn'),
+      statusText: document.getElementById('statusText'),
+      guessLog: document.getElementById('guessLog'),
+      scoreBanner: document.getElementById('scoreBanner'),
+      scoreHeadline: document.getElementById('scoreHeadline'),
+      scoreDetail: document.getElementById('scoreDetail'),
+      cardImage: document.getElementById('cardImage'),
+      placeholder: document.getElementById('placeholder'),
+      cardPoolList: document.getElementById('cardPoolList'),
+      confetti: document.getElementById('confetti')
+    };
+
+    function normalise(value) {
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+    }
+
+    async function loadRound() {
+      try {
+        const response = await fetch('./round.json', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Failed to load round.json (${response.status})`);
+        }
+
+        const round = await response.json();
+        state.round = round;
+        populateCardPool(round.cardPool || []);
+
+        if (round.image) {
+          els.cardImage.src = round.image;
+          els.cardImage.hidden = false;
+          els.placeholder.hidden = true;
+        } else {
+          els.placeholder.textContent = 'No image configured in round.json yet.';
+        }
+
+        render();
+      } catch (error) {
+        console.error(error);
+        els.placeholder.textContent = 'Could not load round.json. Check your files and try again.';
+        els.statusText.textContent = 'Round data failed to load.';
+      }
+    }
+
+    function populateCardPool(cards) {
+      els.cardPoolList.innerHTML = '';
+      for (const card of cards) {
+        const option = document.createElement('option');
+        option.value = card;
+        els.cardPoolList.appendChild(option);
+      }
+    }
+
+    function renderGuesses() {
+      els.guessLog.innerHTML = '';
+      for (const guess of state.guesses) {
+        const pill = document.createElement('span');
+        pill.className = 'guess-pill';
+        pill.textContent = guess;
+        els.guessLog.appendChild(pill);
+      }
+    }
+
+    function updateImage() {
+      const index = Math.max(0, Math.min(state.maxSteps - 1, state.step - 1));
+      const zoom = revealScales[index];
+      const blur = revealBlurs[index];
+
+      els.currentZoom.textContent = `${zoom.toFixed(2)}x`;
+
+      if (state.round?.image) {
+        els.cardImage.style.transform = `scale(${zoom})`;
+        els.cardImage.style.filter = `blur(${blur}px)`;
+      }
+    }
+
+    function updateScoreHint() {
+      const score = Math.max(1, state.maxSteps - state.guesses.length + 1);
+      els.scoreHint.textContent = `${score} / 6`;
+    }
+
+    function render() {
+      els.displayEpisode.textContent = state.round?.episode || 'Episode ? · Card ?';
+      els.stepText.textContent = String(state.step);
+      els.currentStep.textContent = `${state.step} / ${state.maxSteps}`;
+      els.guessCount.textContent = String(state.guesses.length);
+      updateScoreHint();
+      updateImage();
+      renderGuesses();
+    }
+
+    function completeRound() {
+      state.solved = true;
+      const tries = Math.max(1, state.guesses.length);
+      const score = Math.max(1, state.maxSteps - tries + 1);
+
+      els.scoreHeadline.textContent = 'Solved!';
+      els.scoreDetail.textContent = `They got it in ${tries} ${tries === 1 ? 'try' : 'tries'} — score: ${score} / 6.`;
+      els.scoreBanner.classList.add('show');
+      els.statusText.textContent = `Correct answer: ${state.round?.answer || 'Unknown card'}.`;
+      confettiBurst();
+    }
+
+    function submitGuess() {
+      if (!state.round) {
+        els.statusText.textContent = 'Round data is still loading.';
+        return;
+      }
+
+      if (state.solved) {
+        els.statusText.textContent = 'This round is already solved. Refresh for a fresh round.';
+        return;
+      }
+
+      const guess = els.guessInput.value.trim();
+      if (!guess) {
+        els.statusText.textContent = 'Type a guess first.';
+        return;
+      }
+
+      state.guesses.push(guess);
+      els.guessInput.value = '';
+      render();
+
+      const isCorrect = normalise(guess) === normalise(state.round.answer);
+      if (isCorrect) {
+        completeRound();
+      } else {
+        els.statusText.textContent = `Nope — ${guess} is not correct.`;
+      }
+    }
+
+    function nextReveal() {
+      if (state.solved) {
+        els.statusText.textContent = 'This round is already solved.';
+        return;
+      }
+
+      if (state.step >= state.maxSteps) {
+        els.statusText.textContent = 'You are already on the final reveal step.';
+        return;
+      }
+
+      state.step += 1;
+      render();
+      els.statusText.textContent = `Moved to reveal step ${state.step} of ${state.maxSteps}.`;
+    }
+
+    function markRightAnswer() {
+      if (state.solved) {
+        els.statusText.textContent = 'This round is already marked as solved.';
+        return;
+      }
+      completeRound();
+    }
+
+    function confettiBurst() {
+      els.confetti.innerHTML = '';
+      const count = 140;
+
+      for (let i = 0; i < count; i += 1) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+
+        const left = Math.random() * 100;
+        const duration = 2400 + Math.random() * 1800;
+        const delay = Math.random() * 250;
+        const drift = `${(Math.random() - 0.5) * 240}px`;
+        const spin = `${360 + Math.random() * 1080}deg`;
+        const hue = Math.floor(Math.random() * 360);
+
+        piece.style.left = `${left}vw`;
+        piece.style.animationDuration = `${duration}ms`;
+        piece.style.animationDelay = `${delay}ms`;
+        piece.style.setProperty('--drift', drift);
+        piece.style.setProperty('--spin', spin);
+        piece.style.background = `hsl(${hue} 90% 65%)`;
+
+        els.confetti.appendChild(piece);
+      }
+
+      window.setTimeout(() => {
+        els.confetti.innerHTML = '';
+      }, 4600);
+    }
+
+    function bindEvents() {
+      els.submitGuessBtn.addEventListener('click', submitGuess);
+      els.guessInput.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          submitGuess();
+        }
+      });
+
+      els.nextRevealBtn.addEventListener('click', nextReveal);
+      els.rightAnswerBtn.addEventListener('click', markRightAnswer);
+    }
+
+    bindEvents();
+    loadRound();
+  </script>
+</body>
+</html>
