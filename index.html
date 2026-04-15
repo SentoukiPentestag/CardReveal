@@ -153,7 +153,7 @@
 
     .meta {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
       margin-top: 16px;
     }
@@ -219,16 +219,6 @@
       transition: transform 0.12s ease;
     }
 
-    button.secondary {
-      background: #202944;
-      color: var(--text);
-      border: 1px solid var(--line);
-    }
-
-    button.success {
-      background: linear-gradient(180deg, var(--success), #5fd79b);
-    }
-
     button:hover {
       transform: translateY(-1px);
     }
@@ -258,13 +248,30 @@
       margin-top: 16px;
       padding: 16px;
       border-radius: 16px;
-      border: 1px solid rgba(126, 240, 184, 0.35);
-      background: rgba(126, 240, 184, 0.08);
       display: none;
+      border: 1px solid var(--line);
     }
 
     .score-banner.show {
       display: block;
+    }
+
+    .score-banner.win {
+      border: 1px solid rgba(126, 240, 184, 0.35);
+      background: rgba(126, 240, 184, 0.08);
+    }
+
+    .score-banner.lose {
+      border: 1px solid rgba(255, 133, 133, 0.35);
+      background: rgba(255, 133, 133, 0.08);
+    }
+
+    .score-banner.win #scoreHeadline {
+      color: var(--success);
+    }
+
+    .score-banner.lose #scoreHeadline {
+      color: var(--danger);
     }
 
     .footer {
@@ -313,12 +320,6 @@
       }
 
       .meta {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (max-width: 540px) {
-      .meta {
         grid-template-columns: 1fr;
       }
     }
@@ -340,7 +341,7 @@
             <h2 id="displayEpisode">Loading...</h2>
             <p>Reveal step <span id="stepText">1</span> of 6</p>
           </div>
-          <div class="tiny">Built for podcast guessing and score tracking.</div>
+          <div class="tiny">Built by Pentestag</div>
         </div>
 
         <div class="viewer" id="viewer">
@@ -363,10 +364,6 @@
             <div class="k">Guesses used</div>
             <div class="v" id="guessCount">0</div>
           </div>
-          <div class="meta-box">
-            <div class="k">Best possible score</div>
-            <div class="v" id="scoreHint">6 / 6</div>
-          </div>
         </div>
 
         <section class="guess-area">
@@ -377,16 +374,12 @@
 
           <datalist id="cardPoolList"></datalist>
 
-          <div class="buttons">
-            <button id="nextRevealBtn" class="secondary" type="button">Next Reveal</button>
-          </div>
-
-          <div class="status" id="statusText">Round ready. Enter a guess or move to the next reveal.</div>
+          <div class="status" id="statusText">Round ready. Enter a guess to begin.</div>
           <div class="guess-log" id="guessLog"></div>
 
           <div class="score-banner" id="scoreBanner">
-            <strong id="scoreHeadline">Solved!</strong>
-            <div class="tiny" id="scoreDetail">They got it in 1 try.</div>
+            <strong id="scoreHeadline">Congratulations!</strong>
+            <div class="tiny" id="scoreDetail">The card was: ...</div>
           </div>
         </section>
       </main>
@@ -413,10 +406,8 @@
       currentStep: document.getElementById('currentStep'),
       currentZoom: document.getElementById('currentZoom'),
       guessCount: document.getElementById('guessCount'),
-      scoreHint: document.getElementById('scoreHint'),
       guessInput: document.getElementById('guessInput'),
       submitGuessBtn: document.getElementById('submitGuessBtn'),
-      nextRevealBtn: document.getElementById('nextRevealBtn'),
       statusText: document.getElementById('statusText'),
       guessLog: document.getElementById('guessLog'),
       scoreBanner: document.getElementById('scoreBanner'),
@@ -457,7 +448,7 @@
         render();
       } catch (error) {
         console.error(error);
-        els.placeholder.textContent = 'Could not load round.json. Check your files and try again.';
+        els.placeholder.textContent = `Could not load round.json. ${error.message}`;
         els.statusText.textContent = 'Round data failed to load.';
       }
     }
@@ -494,84 +485,13 @@
       }
     }
 
-    function updateScoreHint() {
-      const score = Math.max(1, state.maxSteps - state.guesses.length + 1);
-      els.scoreHint.textContent = `${score} / 6`;
-    }
-
     function render() {
       els.displayEpisode.textContent = state.round?.episode || 'Episode ? · Card ?';
       els.stepText.textContent = String(state.step);
       els.currentStep.textContent = `${state.step} / ${state.maxSteps}`;
       els.guessCount.textContent = String(state.guesses.length);
-      updateScoreHint();
       updateImage();
       renderGuesses();
-    }
-
-    function completeRound() {
-      state.solved = true;
-      const tries = Math.max(1, state.guesses.length);
-      const score = Math.max(1, state.maxSteps - tries + 1);
-
-      els.scoreHeadline.textContent = 'Solved!';
-      els.scoreDetail.textContent = `They got it in ${tries} ${tries === 1 ? 'try' : 'tries'} — score: ${score} / 6.`;
-      els.scoreBanner.classList.add('show');
-      els.statusText.textContent = `Correct answer: ${state.round?.answer || 'Unknown card'}.`;
-      confettiBurst();
-    }
-
-    function submitGuess() {
-      if (!state.round) {
-        els.statusText.textContent = 'Round data is still loading.';
-        return;
-      }
-
-      if (state.solved) {
-        els.statusText.textContent = 'This round is already solved. Refresh for a fresh round.';
-        return;
-      }
-
-      const guess = els.guessInput.value.trim();
-      if (!guess) {
-        els.statusText.textContent = 'Type a guess first.';
-        return;
-      }
-
-      state.guesses.push(guess);
-      els.guessInput.value = '';
-      render();
-
-      const isCorrect = normalise(guess) === normalise(state.round.answer);
-      if (isCorrect) {
-        completeRound();
-      } else {
-        els.statusText.textContent = `Nope — ${guess} is not correct.`;
-      }
-    }
-
-    function nextReveal() {
-      if (state.solved) {
-        els.statusText.textContent = 'This round is already solved.';
-        return;
-      }
-
-      if (state.step >= state.maxSteps) {
-        els.statusText.textContent = 'You are already on the final reveal step.';
-        return;
-      }
-
-      state.step += 1;
-      render();
-      els.statusText.textContent = `Moved to reveal step ${state.step} of ${state.maxSteps}.`;
-    }
-
-    function markRightAnswer() {
-      if (state.solved) {
-        els.statusText.textContent = 'This round is already marked as solved.';
-        return;
-      }
-      completeRound();
     }
 
     function confettiBurst() {
@@ -604,6 +524,66 @@
       }, 4600);
     }
 
+    function completeRound(won) {
+      state.solved = true;
+      const tries = state.guesses.length;
+      const answer = state.round?.answer || 'Unknown card';
+
+      els.scoreBanner.classList.remove('win', 'lose');
+      els.scoreBanner.classList.add('show', won ? 'win' : 'lose');
+
+      if (won) {
+        const score = Math.max(1, state.maxSteps - tries + 1);
+        els.scoreHeadline.textContent = 'Congratulations!';
+        els.scoreDetail.textContent = `The card was: ${answer}. You got it in ${tries} ${tries === 1 ? 'try' : 'tries'} — score: ${score} / 6.`;
+        els.statusText.textContent = `Correct — ${answer}.`;
+        confettiBurst();
+      } else {
+        els.scoreHeadline.textContent = 'Sorry!';
+        els.scoreDetail.textContent = `The card was: ${answer}. You did not get it in 6 tries.`;
+        els.statusText.textContent = `Out of guesses. The card was: ${answer}.`;
+      }
+    }
+
+    function submitGuess() {
+      if (!state.round) {
+        els.statusText.textContent = 'Round data is still loading.';
+        return;
+      }
+
+      if (state.solved) {
+        els.statusText.textContent = 'This round is already finished. Refresh for a fresh round.';
+        return;
+      }
+
+      const guess = els.guessInput.value.trim();
+      if (!guess) {
+        els.statusText.textContent = 'Type a guess first.';
+        return;
+      }
+
+      state.guesses.push(guess);
+      els.guessInput.value = '';
+
+      const isCorrect = normalise(guess) === normalise(state.round.answer);
+
+      if (isCorrect) {
+        render();
+        completeRound(true);
+        return;
+      }
+
+      if (state.guesses.length >= state.maxSteps) {
+        render();
+        completeRound(false);
+        return;
+      }
+
+      state.step = Math.min(state.step + 1, state.maxSteps);
+      render();
+      els.statusText.textContent = `Nope — ${guess} is not correct.`;
+    }
+
     function bindEvents() {
       els.submitGuessBtn.addEventListener('click', submitGuess);
       els.guessInput.addEventListener('keydown', event => {
@@ -612,8 +592,6 @@
           submitGuess();
         }
       });
-
-      els.nextRevealBtn.addEventListener('click', nextReveal);
     }
 
     bindEvents();
