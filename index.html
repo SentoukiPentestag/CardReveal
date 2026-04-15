@@ -524,6 +524,16 @@
       }, 4600);
     }
 
+
+    function revealFully() {
+      els.cardImage.style.transform = 'scale(1)';
+      els.cardImage.style.filter = 'blur(0px)';
+      els.currentZoom.textContent = '1.00x';
+      state.step = state.maxSteps;
+      els.stepText.textContent = String(state.step);
+      els.currentStep.textContent = `${state.step} / ${state.maxSteps}`;
+    }
+
     function completeRound(won) {
       state.solved = true;
       const tries = state.guesses.length;
@@ -533,18 +543,17 @@
       els.scoreBanner.classList.add('show', won ? 'win' : 'lose');
 
       if (won) {
-        const score = Math.max(1, state.maxSteps - tries + 1);
+        revealFully();
         els.scoreHeadline.textContent = 'Congratulations!';
-        els.scoreDetail.textContent = `The card was: ${answer}. You got it in ${tries} ${tries === 1 ? 'try' : 'tries'} — score: ${score} / 6.`;
+        els.scoreDetail.textContent = `The card was: ${answer}. You got it in ${tries} ${tries === 1 ? 'guess' : 'guesses'}.`;
         els.statusText.textContent = `Correct — ${answer}.`;
         confettiBurst();
       } else {
         els.scoreHeadline.textContent = 'Sorry!';
-        els.scoreDetail.textContent = `The card was: ${answer}. You did not get it in 6 tries.`;
+        els.scoreDetail.textContent = `The card was: ${answer}. You did not get it in 6 guesses.`;
         els.statusText.textContent = `Out of guesses. The card was: ${answer}.`;
       }
     }
-
     function submitGuess() {
       if (!state.round) {
         els.statusText.textContent = 'Round data is still loading.';
